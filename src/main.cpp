@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include <Keypad.h>
 #include <BleKeyboard.h>
-#include <AiEsp32RotaryEncoder.h>
+
 
 #include "LEDManager/LEDManager.h"
 #include "DisplayManager/DisplayManager.h"
+#include "EncoderManager/EncoderManager.h"
 
 // --- PINS ---
 #define LED_PIN 2
@@ -14,9 +15,12 @@
 
 // --- INIT ---
 DisplayManager display(128, 64);
+
 LEDManager leds(LED_PIN, NUM_LEDS);
 
-AiEsp32RotaryEncoder rotary_encoder = AiEsp32RotaryEncoder(5, 18, 4, -1, 4);
+AiEsp32RotaryEncoder rotary_encoder(5, 18, 4, -1, 4);
+EncoderManager encoder(rotary_encoder);
+
 BleKeyboard ble_keyboard("ESP32 MacroPad", "Handmade", 100);
 
 
@@ -62,11 +66,12 @@ void loop() {
     const bool connected = ble_keyboard.isConnected();
     const char key = keypad.getKey();
 
+    // --- BT Connection ---
     if (connected != last_connection_state) {
         if (!connected) {
             leds.setPulse(true, COLOUR_BLUE);
         } else {
-            leds.fill(COLOUR_GREEN);
+            leds.fill(RGBColour(255, 0, 119));
         }
         last_connection_state = connected;
     }
@@ -76,6 +81,7 @@ void loop() {
         display.update(connected, last_key, last_encoder_value);
     }
 
+    // --- Sleep ---
     if (key && key != '8') {
         last_key = key;
     }
@@ -89,50 +95,72 @@ void loop() {
             display.setSleep(false);
 
             if (!connected) leds.setPulse(true, COLOUR_BLUE);
-            else leds.fill(COLOUR_GREEN); // Todo: Decide a colour
+            else leds.fill(RGBColour(255, 0, 119)); // Todo: Decide a colour
         }
         return;
     }
 
     if (!sleeping && connected) {
+
+        // --- BTN Matrix ---
         if (key) {
             rainbowActive = false;
 
             if (key == '1') {
                 ble_keyboard.write(KEY_MEDIA_PLAY_PAUSE);
-                leds.fill(COLOUR_GREEN);
+                leds.onInteraction(COLOUR_GREEN, 800, true);
             }
             else if (key == '2') {
-                ble_keyboard.write(KEY_MEDIA_MUTE);
-                leds.fill(COLOUR_RED);
+                ble_keyboard.write(KEY_MEDIA_NEXT_TRACK);
+                leds.onInteraction(RGBColour(0, 255, 255), 800, true); // Teal
             }
             else if (key == '3') {
-                ble_keyboard.write(KEY_MEDIA_NEXT_TRACK);
-                leds.fill(RGBColour(0, 255, 255)); // Teal
+                ble_keyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
+                leds.onInteraction(RGBColour(255, 0, 255), 800, true); // Purple
             }
             else if (key == '4') {
-                ble_keyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
-                leds.fill(RGBColour(255, 0, 255)); // Purple
+                ble_keyboard.write(KEY_MEDIA_STOP);
+                leds.onInteraction(COLOUR_RED, 800, true);
             }
             else if (key == '7') {
                 leds.setRainbow(true);
             }
             else {
-                leds.fill(COLOUR_WHITE); // White
+                leds.onInteraction(COLOUR_WHITE, 800, true); // White
             }
         }
 
-        int current_val = rotary_encoder.readEncoder();
-        if (current_val > last_encoder_value) {
-            ble_keyboard.write(KEY_MEDIA_VOLUME_UP);
-            last_encoder_value = current_val;
-        } else if (current_val < last_encoder_value) {
-            ble_keyboard.write(KEY_MEDIA_VOLUME_DOWN);
-            last_encoder_value = current_val;
-        }
+        // --- Encoder ---
+        const EncoderAction action = encoder.update();
+        if (action != EncoderAction::NONE) {
+            switch (action) {
+                case EncoderAction::CLOCKWISE:
+                    ble_keyboard.write(KEY_MEDIA_VOLUME_UP);
+                    leds.onInteraction(RGBColour(187, 255, 0), 50);
+                    break;
 
-        if (rotary_encoder.isEncoderButtonClicked()) {
-            leds.onInteraction(RGBColour(255, 0, 212), 1000, true);
+                case EncoderAction::COUNTER_CLOCKWISE:
+                    ble_keyboard.write(KEY_MEDIA_VOLUME_DOWN);
+                    leds.onInteraction(RGBColour(187, 255, 0), 50);
+                    break;
+
+                case EncoderAction::SINGLE_CLICK:
+                    ble_keyboard.write(KEY_MEDIA_MUTE);
+                    leds.onInteraction(COLOUR_RED, 500, true);
+                    break;
+
+                case EncoderAction::DOUBLE_CLICK:
+                    display.showMessage("Double Click!", "Page Switch");
+                    leds.onInteraction(COLOUR_WHITE, 500, true);
+                    break;
+
+                case EncoderAction::CLICK_HOLD:
+                    display.showMessage("Click Hold!", "Settings");
+                    leds.onInteraction(RGBColour(255, 100, 0), 1000, true);
+                    break;
+
+                default: ;
+            }
         }
     }
 }

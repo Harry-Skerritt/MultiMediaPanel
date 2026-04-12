@@ -76,8 +76,12 @@ void DisplayManager::update(bool connected, char lastKey, int volume) {
 void DisplayManager::showMessage(const char* title, const char* msg, uint32_t duration) {
     m_display.clearDisplay();
     m_display.setTextSize(1);
-    m_display.setCursor(0, 10);
+
+    m_display.setCursor(0, 0);
     m_display.println(title);
+    m_display.drawLine(0, 10, 128, 10, SSD1306_WHITE);
+
+    m_display.setCursor(0, 20);
     m_display.setTextSize(2);
     m_display.println(msg);
     m_display.display();
