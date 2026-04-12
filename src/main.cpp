@@ -3,9 +3,10 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Keypad.h>
-#include <Adafruit_NeoPixel.h>
 #include <BleKeyboard.h>
 #include <AiEsp32RotaryEncoder.h>
+
+#include "LEDManager/LEDManager.h"
 
 // --- PINS ---
 #define LED_PIN 2
@@ -15,7 +16,7 @@
 
 // --- INIT ---
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
-Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+LEDManager leds = LEDManager(LED_PIN, NUM_LEDS);
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(5, 18, 4, -1, 4);
 BleKeyboard bleKeyboard("ESP32 MacroPad", "Handmade", 100);
 
@@ -37,16 +38,12 @@ bool sleeping = false;
 char lastKey = '-';
 bool rainbowActive = false;
 
-void fillLEDs(byte r, byte g, byte b);
-void rainbowCycle();
-
 void setup() {
     Serial.begin(115200);
     bleKeyboard.begin();
 
-    strip.begin();
-    strip.setBrightness(150);
-    strip.show();
+    // LEDs
+    leds.initialise();
 
     if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDR)) {
         Serial.println("OLED Failed");
@@ -69,9 +66,8 @@ void loop() {
     if (key == '8') {
         sleeping = !sleeping;
         if (sleeping) {
-            fillLEDs(0, 0, 0);
             display.ssd1306_command(SSD1306_DISPLAYOFF);
-            strip.show();
+            leds.off();
         } else {
             display.ssd1306_command(SSD1306_DISPLAYON);
         }
@@ -79,40 +75,32 @@ void loop() {
     }
 
     if (!sleeping) {
+        leds.update();
+
         if (key && connected) {
             rainbowActive = false;
 
             if (key == '1') {
                 bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
-                fillLEDs(0, 255, 0); // Green
+                leds.fill(0, 255, 0); // Green
             }
             else if (key == '2') {
                 bleKeyboard.write(KEY_MEDIA_MUTE);
-                fillLEDs(255, 0, 0); // Red
+                leds.fill(255, 0, 0); // Red
             }
             else if (key == '3') {
                 bleKeyboard.write(KEY_MEDIA_NEXT_TRACK);
-                fillLEDs(0, 255, 255); // Teal
+                leds.fill(0, 255, 255); // Teal
             }
             else if (key == '4') {
                 bleKeyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
-                fillLEDs(255, 0, 255); // Purple
+                leds.fill(255, 0, 255); // Purple
             }
             else if (key == '7') {
-                rainbowActive = true;
+                leds.setRainbow(true);
             }
             else {
-                fillLEDs(255, 255, 255); // White
-            }
-
-            strip.show();
-        }
-
-        if (rainbowActive) {
-            static unsigned long lastRainbowUpdate = 0;
-            if (millis() - lastRainbowUpdate > 20) {
-                rainbowCycle();
-                lastRainbowUpdate = millis();
+                leds.fill(255, 255, 255); // White
             }
         }
 
@@ -141,20 +129,4 @@ void loop() {
         }
         display.display();
     }
-}
-
-void fillLEDs(byte r, byte g, byte b) {
-    for(int i=0; i<NUM_LEDS; i++) {
-        strip.setPixelColor(i, strip.Color(r, g, b));
-    }
-}
-
-void rainbowCycle() {
-    static uint16_t j = 0;
-    for(int i=0; i < strip.numPixels(); i++) {
-        strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(j + (i * 65536 / strip.numPixels()))));
-    }
-    strip.show();
-    j += 512;
-    if (j >= 65536) j = 0;
 }
