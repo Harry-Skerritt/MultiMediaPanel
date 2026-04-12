@@ -9,56 +9,69 @@ EncoderManager::EncoderManager(AiEsp32RotaryEncoder &encoder)
 
 
 EncoderAction EncoderManager::update() {
-    auto action = EncoderAction::NONE;
+    const uint32_t now = millis();
+    const bool is_pressed = m_encoder.isEncoderButtonDown();
 
-    // Handle Rotation
+    // --- Rotation ---
     const int current_pos = m_encoder.readEncoder();
     if (current_pos != m_last_pos) {
-        action = (current_pos > m_last_pos) ? EncoderAction::CLOCKWISE : EncoderAction::COUNTER_CLOCKWISE;
+        EncoderAction rotation = (current_pos > m_last_pos) ? EncoderAction::CLOCKWISE : EncoderAction::COUNTER_CLOCKWISE;
         m_last_pos = current_pos;
-        return action;
+        return rotation;
     }
 
-    // Handle Button Logic
-    const bool is_pressed = m_encoder.isEncoderButtonDown();
-    const uint32_t now = millis();
-
-    // Button pressed
+    // --- Button Press ---
     if (is_pressed && !m_was_pressed) {
         m_btn_last_change = now;
         m_was_pressed = true;
         m_is_holding_notified = false;
+
+        if (m_last_click_time != 0 && (now - m_last_click_time < m_double_click_window)) {
+            m_is_double_tap_pending = true;
+        }
+        return EncoderAction::NONE;
     }
 
-    // Button released
-    else if (!is_pressed && m_was_pressed) {
+    // --- Button Release ---
+    if (!is_pressed && m_was_pressed) {
         const uint32_t press_duration = now - m_btn_last_change;
         m_was_pressed = false;
 
         if (press_duration < m_hold_threshold) {
-            // Check for double click
-            if (now - m_last_click_time < m_double_click_window) {
-                m_last_click_time = 0; // Reset
+            if (m_is_double_tap_pending) {
+                m_is_double_tap_pending = false;
+                m_last_click_time = 0;
                 return EncoderAction::DOUBLE_CLICK;
-            } else {
-                m_last_click_time = now;
             }
+            m_last_click_time = now;
         }
+
+        m_is_double_tap_pending = false;
+        return EncoderAction::NONE;
     }
 
-    // Handle single click timeout (If no second click came within the window)
-    if (m_last_click_time != 0 && (now - m_last_click_time > m_double_click_window) && !is_pressed) {
-        m_last_click_time = 0;
-        return EncoderAction::SINGLE_CLICK;
-    }
-
-    // Handle Hold (While button is still down)
+    // --- Hold Logic ---
     if (is_pressed && !m_is_holding_notified) {
         if (now - m_btn_last_change > m_hold_threshold) {
             m_is_holding_notified = true;
+            m_last_click_time = 0;
+
+            if (m_is_double_tap_pending) {
+                m_is_double_tap_pending = false;
+                return EncoderAction::DOUBLE_CLICK_HOLD;
+            }
             return EncoderAction::CLICK_HOLD;
         }
     }
 
-    return action;
+    // --- Single Click Timout ---
+    if (m_last_click_time != 0 && (now - m_last_click_time > m_double_click_window)) {
+        m_last_click_time = 0;
+
+        if (!is_pressed) {
+            return EncoderAction::SINGLE_CLICK;
+        }
+    }
+
+    return EncoderAction::NONE;
 }

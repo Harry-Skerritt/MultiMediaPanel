@@ -159,7 +159,12 @@ void loop() {
                     leds.onInteraction(RGBColour(255, 100, 0), 1000, true);
                     break;
 
-                default: ;
+                case EncoderAction::DOUBLE_CLICK_HOLD:
+                    display.showMessage("Double Click Hold!", "Secret Menu");
+                    leds.onInteraction(RGBColour(255, 255, 0), 2000, true);
+                    break;
+
+                default: break;
             }
         }
     }

@@ -13,7 +13,8 @@ enum class EncoderAction {
     COUNTER_CLOCKWISE,
     SINGLE_CLICK,
     DOUBLE_CLICK,
-    CLICK_HOLD
+    CLICK_HOLD,
+    DOUBLE_CLICK_HOLD,
 };
 
 
@@ -31,6 +32,7 @@ private:
     uint32_t m_last_click_time = 0;
     bool m_was_pressed = false;
     bool m_is_holding_notified = false;
+    bool m_is_double_tap_pending = false;
 
     // Configurations
     const uint32_t m_double_click_window = 250; // ms
