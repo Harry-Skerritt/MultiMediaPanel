@@ -17,16 +17,31 @@ void LEDManager::initialise(const uint16_t max_brightness) {
 }
 
 void LEDManager::update() {
-   if (m_rainbow_active) {
+    static uint32_t last_update = 0;
+    if (millis() - last_update < m_update_time) return;
+    last_update = millis();
+
+    updateInteraction();
+
+    if (m_interaction_timer > 0) {
+        return;
+    }
+
+    if (m_rainbow_active) {
        updateRainbow();
-   }
+    } else if (m_pulse_active) {
+       updatePulse();
+    }
 }
 
 // --- Lights ---
-void LEDManager::fill(const uint8_t r, const uint8_t g, const uint8_t b) {
+void LEDManager::fill(const RGBColour &colour) {
     disableEffects();
+    m_static_active = true;
+    m_static_colour = colour;
+
     for(int i=0; i < m_strip.numPixels(); i++) {
-        m_strip.setPixelColor(i, m_strip.Color(r, g, b));
+        m_strip.setPixelColor(i, m_strip.Color(colour.r, colour.g, colour.b));
     }
     m_strip.show();
 }
@@ -36,20 +51,42 @@ void LEDManager::off() {
     m_strip.show();
 }
 
+// -- Interaction --
+void LEDManager::onInteraction(const RGBColour &colour, const uint32_t interaction_duration) {
+    m_interaction_duration = interaction_duration;
+    for(int i=0; i < m_strip.numPixels(); i++) {
+        m_strip.setPixelColor(i, m_strip.Color(colour.r, colour.g, colour.b));
+    }
+    m_strip.show();
+    m_interaction_timer = millis();
+}
+
+void LEDManager::updateInteraction() {
+    if (m_interaction_timer == 0) return;
+
+    if (millis() - m_interaction_timer > m_interaction_duration) {
+        m_interaction_timer = 0;
+
+        if (m_static_active) {
+            for(int i=0; i < m_strip.numPixels(); i++) {
+                m_strip.setPixelColor(i, m_strip.Color(m_static_colour.r, m_static_colour.g, m_static_colour.b));
+            }
+            m_strip.show();
+        }
+        else if (!m_rainbow_active && !m_pulse_active) {
+            off();
+        }
+    }
+}
+
+
+
 // -- Rainbow --
 void LEDManager::setRainbow(const bool active) {
     m_rainbow_active = active;
 }
 
-// Private
 void LEDManager::updateRainbow() {
-    static uint32_t last_update = 0;
-
-    if (millis() - last_update < m_update_time) {
-        return;
-    }
-    last_update = millis();
-
     for(int i=0; i < m_strip.numPixels(); i++) {
         uint32_t pixel_hue = m_hue + (i * 65536 / m_strip.numPixels());
         m_strip.setPixelColor(i, m_strip.gamma32(m_strip.ColorHSV(pixel_hue)));
@@ -60,9 +97,36 @@ void LEDManager::updateRainbow() {
 }
 
 
+// -- Pulse --
+void LEDManager::setPulse(const bool active, const RGBColour& colour, const float speed) {
+    disableEffects();
+    m_pulse_active = active;
+    m_pulse_colour = colour;
+    m_pulse_speed = speed;
+}
+
+void LEDManager::updatePulse() {
+    const float intensity = (sin(m_pulse_step) + 1.0f) / 2.0f;
+
+    const uint8_t r = static_cast<uint8_t>(m_pulse_colour.r * intensity);
+    const uint8_t g = static_cast<uint8_t>(m_pulse_colour.g * intensity);
+    const uint8_t b = static_cast<uint8_t>(m_pulse_colour.b * intensity);
+
+    for(int i = 0; i < m_strip.numPixels(); i++) {
+        m_strip.setPixelColor(i, m_strip.Color(r, g, b));
+    }
+    m_strip.show();
+
+    m_pulse_step += m_pulse_speed;
+    if (m_pulse_step >= 6.283) m_pulse_step = 0;
+}
+
+
 // Helpers - Private
 void LEDManager::disableEffects() {
-    setRainbow(false);
+    m_rainbow_active = false;
+    m_pulse_active = false;
+    m_static_active = false;
 }
 
 

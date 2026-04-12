@@ -32,12 +32,31 @@ void DisplayManager::update(bool connected, char lastKey, int volume) {
     }
 
     m_display.clearDisplay();
+    m_display.setTextSize(1);
 
+    if (!connected) {
+        m_display.setCursor(0, 0);
+        m_display.print("BT Disconnected");
+        m_display.drawLine(0, 10, 128, 10, SSD1306_WHITE);
+
+        m_display.setCursor(0, 20);
+        m_display.setTextSize(2);
+        m_display.print("Pairing...");
+
+        m_display.setCursor(0, 45);
+        m_display.setTextSize(1);
+        m_display.print("Name: ");
+        m_display.print("ESP32-MacroPad");
+
+        m_display.display();
+
+        return;
+    }
 
     // Status Bar
     m_display.setTextSize(1);
     m_display.setCursor(0, 0);
-    m_display.print(connected ? "BT: OK" : "BT: pairing...");
+    m_display.print("Page: 1 - Media");
     m_display.drawLine(0, 10, 128, 10, SSD1306_WHITE);
 
     // Main Info

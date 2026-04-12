@@ -56,9 +56,25 @@ void setup() {
     rotary_encoder.setBoundaries(-1000, 1000, false);
 }
 
+bool last_connection_state = true;
+
 void loop() {
-    bool connected = ble_keyboard.isConnected();
-    char key = keypad.getKey();
+    const bool connected = ble_keyboard.isConnected();
+    const char key = keypad.getKey();
+
+    if (connected != last_connection_state) {
+        if (!connected) {
+            leds.setPulse(true, COLOUR_BLUE);
+        } else {
+            leds.fill(COLOUR_GREEN);
+        }
+        last_connection_state = connected;
+    }
+
+    if (!sleeping) {
+        leds.update();
+        display.update(connected, last_key, last_encoder_value);
+    }
 
     if (key && key != '8') {
         last_key = key;
@@ -71,37 +87,38 @@ void loop() {
             leds.off();
         } else {
             display.setSleep(false);
+
+            if (!connected) leds.setPulse(true, COLOUR_BLUE);
+            else leds.fill(COLOUR_GREEN); // Todo: Decide a colour
         }
         return;
     }
 
     if (!sleeping && connected) {
-        leds.update();
-
         if (key) {
             rainbowActive = false;
 
             if (key == '1') {
                 ble_keyboard.write(KEY_MEDIA_PLAY_PAUSE);
-                leds.fill(0, 255, 0); // Green
+                leds.fill(COLOUR_GREEN);
             }
             else if (key == '2') {
                 ble_keyboard.write(KEY_MEDIA_MUTE);
-                leds.fill(255, 0, 0); // Red
+                leds.fill(COLOUR_RED);
             }
             else if (key == '3') {
                 ble_keyboard.write(KEY_MEDIA_NEXT_TRACK);
-                leds.fill(0, 255, 255); // Teal
+                leds.fill(RGBColour(0, 255, 255)); // Teal
             }
             else if (key == '4') {
                 ble_keyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
-                leds.fill(255, 0, 255); // Purple
+                leds.fill(RGBColour(255, 0, 255)); // Purple
             }
             else if (key == '7') {
                 leds.setRainbow(true);
             }
             else {
-                leds.fill(255, 255, 255); // White
+                leds.fill(COLOUR_WHITE); // White
             }
         }
 
@@ -114,6 +131,8 @@ void loop() {
             last_encoder_value = current_val;
         }
 
-        display.update(connected, last_key, last_encoder_value);
+        if (rotary_encoder.isEncoderButtonClicked()) {
+            leds.onInteraction(RGBColour(255, 0, 212), 250);
+        }
     }
 }

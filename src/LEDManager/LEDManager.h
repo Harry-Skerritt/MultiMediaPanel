@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <Adafruit_NeoPixel.h>
 
+#include "Colours.h"
 
 
 class LEDManager {
@@ -18,9 +19,12 @@ public:
     void initialise(uint16_t max_brightness = 127);
     void update();
 
+    void onInteraction(const RGBColour& colour, uint32_t interaction_duration = 1000);
+
     // --- Lights ---
-    void fill(uint8_t r, uint8_t g, uint8_t b);
+    void fill(const RGBColour& colour);
     void setRainbow(bool active);
+    void setPulse(bool active, const RGBColour& colour = COLOUR_WHITE, float speed = 0.05);
     void off();
 
 
@@ -29,10 +33,28 @@ private:
     uint16_t m_max_brightness = 0;
     uint32_t m_update_time = 20; // 20ms = 50fps
 
+    // -- Static --
+    bool m_static_active = false;
+    RGBColour m_static_colour;
+
+    // -- Interaction --
+    void updateInteraction();
+    uint32_t m_interaction_timer = 0;
+    uint32_t m_interaction_duration = 0;
+
     // -- Rainbow --
     void updateRainbow();
     bool m_rainbow_active = false;
     uint16_t m_hue = 0;
+
+    // -- Pulse --
+    void updatePulse();
+    bool m_pulse_active = false;
+    RGBColour m_pulse_colour;
+    float m_pulse_speed = 0.05;
+    float m_pulse_step = 0;
+
+
 
 
     // Helpers
