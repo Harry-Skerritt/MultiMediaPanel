@@ -7,9 +7,7 @@
 
 MediaPage::MediaPage(LEDManager& leds, BleKeyboard& keyboard)
     : m_leds(leds), m_keyboard(keyboard)
-{
-    //leds.fill(RGBColour(255, 0, 119));
-}
+{}
 
 
 PageID MediaPage::handleInput(EncoderAction action, char key) {
@@ -50,26 +48,17 @@ PageID MediaPage::handleInput(EncoderAction action, char key) {
 }
 
 void MediaPage::draw(Adafruit_SSD1306 &display) {
-/*
-    display.setCursor(0, 0);
-    display.print("1 - Media");
-    display.drawLine(0, 10, 128, 10, SSD1306_WHITE);
-    */
-
-
     display.clearDisplay();
     display.setTextSize(1);
 
     // --- Header ---
-    //display.fillRect(0, 0, 128, 14, SSD1306_WHITE);
-    //display.setTextColor(SSD1306_BLACK);
-
-    //display.setCursor(4, 3);
     display.setCursor(0, 3);
     display.print("1 - MEDIA");
 
     display.setCursor(85, 3);
     display.print("BT: OK");
+    display.drawLine(0, 13, 128, 10, SSD1306_WHITE);
+
 
 
     // ---Grid Setup ---

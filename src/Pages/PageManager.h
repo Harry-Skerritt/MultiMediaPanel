@@ -27,6 +27,7 @@ public:
     PageID getCurrentPageID() const { return m_current_page_id; }
 
 private:
+    LEDManager& m_leds;
     Page* m_current_page = nullptr;
     PageID m_current_page_id;
 

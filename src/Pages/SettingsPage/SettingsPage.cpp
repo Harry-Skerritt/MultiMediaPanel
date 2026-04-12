@@ -147,6 +147,16 @@ void SettingsPage::draw(Adafruit_SSD1306 &display) {
     }
 
     display.display();
+
+
+
+    if (!m_leds_enabled) {
+        m_leds.off();
+    } else {
+        if (m_is_editing && m_menu_index == 1) {
+            m_leds.setBrightness(m_brightness);
+        }
+    }
 }
 
 

@@ -32,8 +32,8 @@ PageManager page_manager(leds, ble_keyboard, settings_manager);
 
 
 // --- Matrix ---
-const byte ROWS = 2;
-const byte COLS = 4;
+constexpr byte ROWS = 2;
+constexpr byte COLS = 4;
 char keys[ROWS][COLS] = {
     {'1','2','3','4'},
     {'5','6','7','8'}
@@ -108,12 +108,10 @@ void loop() {
 
     if (!sleeping) {
         if (action == EncoderAction::DOUBLE_CLICK_HOLD) {
-            if (page_manager.getCurrentPageID() == PageID::SETTINGS) {
-                page_manager.switchPage(PageID::MEDIA);
-            } else {
+            if (page_manager.getCurrentPageID() == PageID::MEDIA) {
                 page_manager.switchPage(PageID::SETTINGS);
+                leds.onInteraction(RGBColour(255, 100, 0), 600, true);
             }
-            leds.onInteraction(RGBColour(255, 100, 0), 600, true);
             return;
         }
 

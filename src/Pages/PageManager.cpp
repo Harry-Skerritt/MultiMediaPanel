@@ -5,7 +5,7 @@
 #include "PageManager.h"
 
 PageManager::PageManager(LEDManager& leds, BleKeyboard& keyboard, SettingsManager& settings_manager)
-    : m_current_page_id(), m_settings_page(leds, settings_manager), m_media_page(leds, keyboard) {
+    : m_leds(leds), m_current_page_id(), m_settings_page(leds, settings_manager), m_media_page(leds, keyboard) {
     m_current_page = &m_media_page; // Todo: Change eventually
 }
 
@@ -33,6 +33,8 @@ void PageManager::switchPage(const PageID new_page) {
         case PageID::MEDIA:    m_current_page = &m_media_page; break;
         case PageID::SETTINGS: m_current_page = &m_settings_page; break;
     }
+
+    m_leds.fill(m_current_page->getPageTheme());
 }
 
 void PageManager::draw(Adafruit_SSD1306& display) const {

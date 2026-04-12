@@ -17,6 +17,8 @@ public:
     PageID handleInput(EncoderAction action, char key) override;
     void draw(Adafruit_SSD1306 &display) override;
 
+    RGBColour getPageTheme() override { return RGBColour(255, 0, 119); }
+
 private:
     LEDManager& m_leds;
     BleKeyboard& m_keyboard;

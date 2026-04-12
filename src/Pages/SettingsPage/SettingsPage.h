@@ -17,6 +17,10 @@ public:
     void draw(Adafruit_SSD1306 &display) override;
     PageID handleInput(EncoderAction action, char key) override;
 
+    RGBColour getPageTheme() override {
+        return RGBColour(255, 100, 0);
+    }
+
     void syncSettings(const DeviceSettings& settings);
 
 private:
