@@ -1,0 +1,71 @@
+# Global Device Settings
+[device]
+name = "ESP32 MacroPad"
+polling_rate = 1000
+default_brightness = 60
+save_state = true       # Open to last page
+oled_contrast = 255
+leds_enabled = true
+
+# ---------------------------------------------------------
+# Page 1: Media
+# ---------------------------------------------------------
+[[pages]]
+name = "Media"
+colour = "#ff0077"
+
+    [pages.oled]
+    header_text = "Media"
+    encoder_viz = "volume"
+    layout = "grid_2x4"
+    show_labels = true
+
+    # --- ROW 1 (Btns 0-3) ---
+    [pages.buttons.btn0]
+    label = "PLAY"
+    action = "KEY_MEDIA_PLAY_PAUSE"
+    interaction_colour = "#00FF00"
+
+    [pages.buttons.btn1]
+    label = "PREV"
+    action = "KEY_MEDIA_PREVIOUS_TRACK"
+    interaction_colour = "#FF00FF"
+
+    [pages.buttons.btn2]
+    label = "NEXT"
+    action = "KEY_MEDIA_NEXT_TRACK"
+    interaction_colour = "#00FFFF"
+
+    [pages.buttons.btn3]
+    label = "STOP"
+    action = "KEY_MEDIA_STOP"
+    interaction_colour = "#FF0000"
+
+
+    # --- ROW 2 (Btns 4-7) ---
+    [pages.buttons.btn4]
+    label = "MUTE"
+    action = "KEY_MEDIA_MUTE"
+    interaction_colour = "#FF0000"
+
+
+    # --- ENCODER ---
+    [pages.encoder]
+    label = "Vol"
+    sensitivity = 1
+
+    [pages.encoder.cw]
+    action = "KEY_MEDIA_VOLUME_UP"
+    interaction_colour = "#00FF00"
+
+    [pages.encoder.ccw]
+    action = "KEY_MEDIA_VOLUME_DOWN"
+    interaction_colour = "#FF0000"
+
+    [pages.encoder.click]
+    action = "KEY_MEDIA_MUTE"
+    interaction_colour = "#0000FF"
+
+    [pages.encoder.hold]
+    action = "INTERNAL_SLEEP"
+    interaction_colour = "#FFFFFF"

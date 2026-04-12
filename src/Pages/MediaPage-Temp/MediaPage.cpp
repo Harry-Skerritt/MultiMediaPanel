@@ -57,7 +57,7 @@ void MediaPage::draw(Adafruit_SSD1306 &display) {
 
     display.setCursor(85, 3);
     display.print("BT: OK");
-    display.drawLine(0, 13, 128, 10, SSD1306_WHITE);
+    display.drawLine(0, 13, 128, 13, SSD1306_WHITE);
 
 
 

@@ -115,12 +115,15 @@ void loop() {
             return;
         }
 
-        if (connected || page_manager.getCurrentPageID() == PageID::SETTINGS) {
+        if (!connected && page_manager.getCurrentPageID() != PageID::SETTINGS) {
+            display.update(connected, key, 0);
+        } else if (connected || page_manager.getCurrentPageID() == PageID::SETTINGS) {
             page_manager.update(action, key);
+            page_manager.draw(*display.getDisplay());
+
         }
 
         // Background tasks
         leds.update();
-        page_manager.draw(*display.getDisplay());
     }
 }
