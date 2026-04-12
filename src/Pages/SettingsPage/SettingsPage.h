@@ -17,6 +17,8 @@ public:
     void draw(Adafruit_SSD1306 &display) override;
     PageID handleInput(EncoderAction action, char key) override;
 
+    void syncSettings(const DeviceSettings& settings);
+
 private:
     LEDManager& m_leds;
     SettingsManager& m_settings_manager;
@@ -33,7 +35,10 @@ private:
     uint8_t m_contrast = 127;
 
     static constexpr int m_max_items = 7;
-    const char* m_options[m_max_items] = {"Setup Pages", "LED Brightness", "LED State", "OLED Contrast", "Sleep Timer", "BT Reset", "Back"};
+    const char* m_options[m_max_items] = {
+        "Setup Pages", "LED Brightness", "LED State",
+        "OLED Contrast", "Sleep Timer", "BT Reset", "Back"
+    };
 };
 
 

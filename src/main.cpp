@@ -50,11 +50,14 @@ bool rainbowActive = false;
 
 void setup() {
     Serial.begin(115200);
-    Wire.begin();
+    while (!Serial) delay(10);
+    delay(1000);
+    Serial.println("--- Booting MacroPad ---");
 
     // Load Settings
     settings_manager.begin();
-    DeviceSettings saved_settings = settings_manager.load();
+    const DeviceSettings saved_settings = settings_manager.load();
+    page_manager.initialise(saved_settings);
 
     // Keyboard
     ble_keyboard.begin();
@@ -104,92 +107,22 @@ void loop() {
     }
 
     if (!sleeping) {
-        if (action == EncoderAction::CLICK_HOLD) {
-            static bool is_settings = false;
-            is_settings = !is_settings;
-            page_manager.switchPage(is_settings ? PageID::SETTINGS : PageID::MEDIA);
+        if (action == EncoderAction::DOUBLE_CLICK_HOLD) {
+            if (page_manager.getCurrentPageID() == PageID::SETTINGS) {
+                page_manager.switchPage(PageID::MEDIA);
+            } else {
+                page_manager.switchPage(PageID::SETTINGS);
+            }
             leds.onInteraction(RGBColour(255, 100, 0), 600, true);
             return;
         }
 
-        if (connected) {
+        if (connected || page_manager.getCurrentPageID() == PageID::SETTINGS) {
             page_manager.update(action, key);
         }
 
-        // 5. UPDATE: Background tasks
+        // Background tasks
         leds.update();
         page_manager.draw(*display.getDisplay());
     }
-
-    /*
-    if (!sleeping && connected) {
-
-        // --- BTN Matrix ---
-        if (key) {
-            rainbowActive = false;
-
-            if (key == '1') {
-                ble_keyboard.write(KEY_MEDIA_PLAY_PAUSE);
-                leds.onInteraction(COLOUR_GREEN, 800, true);
-            }
-            else if (key == '2') {
-                ble_keyboard.write(KEY_MEDIA_NEXT_TRACK);
-                leds.onInteraction(RGBColour(0, 255, 255), 800, true); // Teal
-            }
-            else if (key == '3') {
-                ble_keyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
-                leds.onInteraction(RGBColour(255, 0, 255), 800, true); // Purple
-            }
-            else if (key == '4') {
-                ble_keyboard.write(KEY_MEDIA_STOP);
-                leds.onInteraction(COLOUR_RED, 800, true);
-            }
-            else if (key == '7') {
-                leds.setRainbow(true);
-            }
-            else {
-                leds.onInteraction(COLOUR_WHITE, 800, true); // White
-            }
-        }
-
-        // --- Encoder ---
-        if (action != EncoderAction::NONE) {
-            switch (action) {
-                case EncoderAction::CLOCKWISE:
-                    ble_keyboard.write(KEY_MEDIA_VOLUME_UP);
-                    leds.onInteraction(RGBColour(187, 255, 0), 50);
-                    break;
-
-                case EncoderAction::COUNTER_CLOCKWISE:
-                    ble_keyboard.write(KEY_MEDIA_VOLUME_DOWN);
-                    leds.onInteraction(RGBColour(187, 255, 0), 50);
-                    break;
-
-                case EncoderAction::SINGLE_CLICK:
-                    ble_keyboard.write(KEY_MEDIA_MUTE);
-                    leds.onInteraction(COLOUR_RED, 500, true);
-                    break;
-
-                case EncoderAction::DOUBLE_CLICK:
-                    display.showMessage("Double Click!", "Page Switch");
-                    leds.onInteraction(COLOUR_WHITE, 500, true);
-                    break;
-
-                case EncoderAction::CLICK_HOLD:
-                    static bool is_settings = false;
-                    is_settings = !is_settings;
-                    page_manager.switchPage(is_settings ? PageID::SETTINGS : PageID::MEDIA);
-                    leds.onInteraction(RGBColour(255, 100, 0), 1000, true);
-                    break;
-
-                case EncoderAction::DOUBLE_CLICK_HOLD:
-                    display.showMessage("Double Click Hold!", "Secret Menu");
-                    leds.onInteraction(RGBColour(255, 255, 0), 2000, true);
-                    break;
-
-                default: break;
-            }
-        }
-    }
-    */
 }

@@ -7,11 +7,16 @@
 SettingsPage::SettingsPage(LEDManager &leds, SettingsManager& settings_manager)
     : m_leds(leds), m_settings_manager(settings_manager)
 {
-    const auto settings = settings_manager.load();
+    //leds.fill(RGBColour(255, 100, 0));
+}
+
+void SettingsPage::syncSettings(const DeviceSettings &settings) {
     m_leds_enabled = settings.leds_enabled;
     m_brightness = settings.led_brightness;
     m_contrast = settings.screen_contrast;
     m_sleep_minutes = settings.sleep_mins;
+
+    Serial.println("SettingsPage Synced!");
 }
 
 

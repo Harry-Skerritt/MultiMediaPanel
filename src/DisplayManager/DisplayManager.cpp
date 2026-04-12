@@ -23,8 +23,6 @@ bool DisplayManager::initialise() {
 void DisplayManager::update(bool connected, char lastKey, int volume) {
     if (m_is_sleeping) return;
 
-
-    // Todo: Replace
     if (m_message_timer > 0 && (millis() - m_message_timer < m_message_duration)) {
         return;
     } else {
@@ -52,25 +50,6 @@ void DisplayManager::update(bool connected, char lastKey, int volume) {
 
         return;
     }
-
-    // Status Bar
-    m_display.setTextSize(1);
-    m_display.setCursor(0, 0);
-    m_display.print("Page: 1 - Media");
-    m_display.drawLine(0, 10, 128, 10, SSD1306_WHITE);
-
-    // Main Info
-    m_display.setCursor(0, 20);
-    m_display.setTextSize(2);
-    m_display.print("Key: ");
-    m_display.print(lastKey);
-
-    m_display.setCursor(0, 45);
-    m_display.setTextSize(1);
-    m_display.print("Volume: ");
-    m_display.print(volume);
-
-    m_display.display();
 }
 
 void DisplayManager::showMessage(const char* title, const char* msg, uint32_t duration) {
@@ -97,12 +76,14 @@ void DisplayManager::setSleep(const bool active) {
         m_display.ssd1306_command(SSD1306_DISPLAYOFF);
     } else {
         m_display.ssd1306_command(SSD1306_DISPLAYON);
+        setContrast(m_contrast);
     }
 }
 
 
 void DisplayManager::setContrast(const uint8_t contrast) {
+    m_contrast = contrast;
     m_display.ssd1306_command(SSD1306_SETCONTRAST);
-    m_display.ssd1306_command(contrast);
+    m_display.ssd1306_command(m_contrast);
 
 }

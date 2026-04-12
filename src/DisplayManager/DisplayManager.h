@@ -32,6 +32,7 @@ public:
 private:
     Adafruit_SSD1306 m_display;
     uint8_t m_width, m_height;
+    uint8_t m_contrast;
 
     // Sleep
     bool m_is_sleeping = false;

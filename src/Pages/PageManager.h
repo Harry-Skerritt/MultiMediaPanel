@@ -9,22 +9,29 @@
 #include "Base/Page.h"
 #include "EncoderManager/EncoderManager.h"
 #include "LEDManager/LEDManager.h"
+#include "MediaPage-Temp/MediaPage.h"
 #include "SettingsPage/SettingsPage.h"
 
 
 
 class PageManager {
 public:
-    PageManager(LEDManager& leds, BleKeyboard& keyboard, SettingsManager& settings);
+    PageManager(LEDManager& leds, BleKeyboard& keyboard, SettingsManager& settings_manager);
 
+    void initialise(const DeviceSettings& settings);
+
+    PageID update(EncoderAction action, char key);
     void switchPage(PageID new_page);
-    void update(EncoderAction action, char key) const;
     void draw(Adafruit_SSD1306& display) const;
+
+    PageID getCurrentPageID() const { return m_current_page_id; }
 
 private:
     Page* m_current_page = nullptr;
+    PageID m_current_page_id;
 
     SettingsPage m_settings_page;
+    MediaPage m_media_page;
 };
 
 
