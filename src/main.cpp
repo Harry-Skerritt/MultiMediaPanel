@@ -6,6 +6,8 @@
 #include "LEDManager/LEDManager.h"
 #include "DisplayManager/DisplayManager.h"
 #include "EncoderManager/EncoderManager.h"
+#include "Pages/PageManager.h"
+#include "SettingsManager/SettingsManager.h"
 
 // --- PINS ---
 #define LED_PIN 2
@@ -14,6 +16,8 @@
 
 
 // --- INIT ---
+SettingsManager settings_manager;
+
 DisplayManager display(128, 64);
 
 LEDManager leds(LED_PIN, NUM_LEDS);
@@ -22,6 +26,9 @@ AiEsp32RotaryEncoder rotary_encoder(5, 18, 4, -1, 4);
 EncoderManager encoder(rotary_encoder);
 
 BleKeyboard ble_keyboard("ESP32 MacroPad", "Handmade", 100);
+
+PageManager page_manager(leds, ble_keyboard, settings_manager);
+
 
 
 // --- Matrix ---
@@ -45,14 +52,20 @@ void setup() {
     Serial.begin(115200);
     Wire.begin();
 
+    // Load Settings
+    settings_manager.begin();
+    DeviceSettings saved_settings = settings_manager.load();
+
     // Keyboard
     ble_keyboard.begin();
 
     // LEDs
-    leds.initialise();
+    leds.initialise(saved_settings.led_brightness);
+    leds.setEnabled(saved_settings.leds_enabled);
 
     // Display
     display.initialise();
+    display.setContrast(saved_settings.screen_contrast);
 
     // Encoder
     rotary_encoder.begin();
@@ -63,6 +76,7 @@ void setup() {
 bool last_connection_state = true;
 
 void loop() {
+    const EncoderAction action = encoder.update();
     const bool connected = ble_keyboard.isConnected();
     const char key = keypad.getKey();
 
@@ -76,30 +90,38 @@ void loop() {
         last_connection_state = connected;
     }
 
-    if (!sleeping) {
-        leds.update();
-        display.update(connected, last_key, last_encoder_value);
-    }
-
-    // --- Sleep ---
-    if (key && key != '8') {
-        last_key = key;
-    }
-
+    // --- Sleeping ---
     if (key == '8') {
         sleeping = !sleeping;
+        display.setSleep(sleeping);
         if (sleeping) {
-            display.setSleep(true);
             leds.off();
         } else {
-            display.setSleep(false);
-
             if (!connected) leds.setPulse(true, COLOUR_BLUE);
             else leds.fill(RGBColour(255, 0, 119)); // Todo: Decide a colour
         }
         return;
     }
 
+    if (!sleeping) {
+        if (action == EncoderAction::CLICK_HOLD) {
+            static bool is_settings = false;
+            is_settings = !is_settings;
+            page_manager.switchPage(is_settings ? PageID::SETTINGS : PageID::MEDIA);
+            leds.onInteraction(RGBColour(255, 100, 0), 600, true);
+            return;
+        }
+
+        if (connected) {
+            page_manager.update(action, key);
+        }
+
+        // 5. UPDATE: Background tasks
+        leds.update();
+        page_manager.draw(*display.getDisplay());
+    }
+
+    /*
     if (!sleeping && connected) {
 
         // --- BTN Matrix ---
@@ -131,7 +153,6 @@ void loop() {
         }
 
         // --- Encoder ---
-        const EncoderAction action = encoder.update();
         if (action != EncoderAction::NONE) {
             switch (action) {
                 case EncoderAction::CLOCKWISE:
@@ -155,7 +176,9 @@ void loop() {
                     break;
 
                 case EncoderAction::CLICK_HOLD:
-                    display.showMessage("Click Hold!", "Settings");
+                    static bool is_settings = false;
+                    is_settings = !is_settings;
+                    page_manager.switchPage(is_settings ? PageID::SETTINGS : PageID::MEDIA);
                     leds.onInteraction(RGBColour(255, 100, 0), 1000, true);
                     break;
 
@@ -168,4 +191,5 @@ void loop() {
             }
         }
     }
+    */
 }

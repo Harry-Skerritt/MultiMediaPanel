@@ -13,7 +13,6 @@
 #include <Wire.h>
 
 
-
 class DisplayManager {
 public:
     DisplayManager(uint8_t width, uint8_t height);
@@ -24,16 +23,22 @@ public:
     void showMessage(const char* title, const char* msg, uint32_t duration = 1000);
     void setSleep(bool active);
 
+    Adafruit_SSD1306* getDisplay() { return &m_display; }
+
+    void setContrast(uint8_t contrast);
+
+
 
 private:
     Adafruit_SSD1306 m_display;
     uint8_t m_width, m_height;
 
+    // Sleep
     bool m_is_sleeping = false;
 
+    // Msg
     uint32_t m_message_timer = 0;
     uint32_t m_message_duration = 0;
-
 };
 
 

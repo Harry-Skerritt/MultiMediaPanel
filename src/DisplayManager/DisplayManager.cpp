@@ -99,3 +99,10 @@ void DisplayManager::setSleep(const bool active) {
         m_display.ssd1306_command(SSD1306_DISPLAYON);
     }
 }
+
+
+void DisplayManager::setContrast(const uint8_t contrast) {
+    m_display.ssd1306_command(SSD1306_SETCONTRAST);
+    m_display.ssd1306_command(contrast);
+
+}

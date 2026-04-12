@@ -11,11 +11,11 @@
 #include "LEDManager/LEDManager.h"
 #include "SettingsPage/SettingsPage.h"
 
-enum class PageID { MEDIA, SETTINGS };
+
 
 class PageManager {
 public:
-    PageManager(LEDManager& leds, BleKeyboard& keyboard);
+    PageManager(LEDManager& leds, BleKeyboard& keyboard, SettingsManager& settings);
 
     void switchPage(PageID new_page);
     void update(EncoderAction action, char key) const;

@@ -17,6 +17,8 @@ void LEDManager::initialise(const uint16_t max_brightness) {
 }
 
 void LEDManager::update() {
+    if (!m_enabled) return;
+
     static uint32_t last_update = 0;
     if (millis() - last_update < m_update_time) return;
     last_update = millis();
@@ -34,6 +36,25 @@ void LEDManager::update() {
     }
 }
 
+// --- Setters ---
+void LEDManager::setBrightness(const uint16_t brightness) {
+    m_max_brightness = brightness;
+    m_strip.setBrightness(m_max_brightness);
+}
+
+void LEDManager::setEnabled(const bool enabled) {
+    m_enabled = enabled;
+
+    if (!m_enabled) {
+        off();
+    } else {
+        if (m_static_active && !m_rainbow_active && !m_pulse_active) {
+            fillStrip(m_static_colour);
+        }
+    }
+}
+
+
 // --- Lights ---
 void LEDManager::fill(const RGBColour &colour) {
     disableEffects();
@@ -50,6 +71,8 @@ void LEDManager::off() {
 
 // -- Interaction --
 void LEDManager::onInteraction(const RGBColour &colour, const uint32_t interaction_duration, const bool fade) {
+    if (!m_enabled) return;
+
     m_interaction_colour = colour;
     m_interaction_duration = interaction_duration;
     m_interaction_fade = fade;

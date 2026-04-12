@@ -8,13 +8,14 @@
 #include "DisplayManager/DisplayManager.h"
 #include "EncoderManager/EncoderManager.h"
 
+enum class PageID { MEDIA, SETTINGS };
 
 class Page {
 public:
     virtual ~Page() = default;
 
     virtual void draw(Adafruit_SSD1306& display) = 0;
-    virtual void handleInput (EncoderAction action, char key) = 0;
+    virtual PageID handleInput (EncoderAction action, char key) = 0;
 };
 
 

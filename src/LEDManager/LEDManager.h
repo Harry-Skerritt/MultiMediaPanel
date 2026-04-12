@@ -19,6 +19,12 @@ public:
     void initialise(uint16_t max_brightness = 127);
     void update();
 
+    void setBrightness(uint16_t brightness);
+    void setEnabled(const bool enabled);
+
+    bool getEnabled() const { return m_enabled; };
+    u_int16_t getBrightness() const { return m_max_brightness; }
+
     void onInteraction(const RGBColour& colour, uint32_t interaction_duration = 1000, bool fade = false);
 
     // --- Lights ---
@@ -30,8 +36,9 @@ public:
 
 private:
     Adafruit_NeoPixel m_strip;
-    uint16_t m_max_brightness = 0;
+    uint16_t m_max_brightness = 127;
     uint32_t m_update_time = 20; // 20ms = 50fps
+    bool m_enabled = true;
 
     // -- Static --
     bool m_static_active = false;

@@ -4,8 +4,8 @@
 
 #include "PageManager.h"
 
-PageManager::PageManager(LEDManager& leds, BleKeyboard& keyboard)
-    : m_settings_page(leds) {
+PageManager::PageManager(LEDManager& leds, BleKeyboard& keyboard, SettingsManager& settings_manager)
+    : m_settings_page(leds, settings_manager) {
     m_current_page = &m_settings_page; // Todo: Change eventually
 }
 
