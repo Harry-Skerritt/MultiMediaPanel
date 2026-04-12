@@ -40,10 +40,7 @@ void LEDManager::fill(const RGBColour &colour) {
     m_static_active = true;
     m_static_colour = colour;
 
-    for(int i=0; i < m_strip.numPixels(); i++) {
-        m_strip.setPixelColor(i, m_strip.Color(colour.r, colour.g, colour.b));
-    }
-    m_strip.show();
+    fillStrip(colour);
 }
 
 void LEDManager::off() {
@@ -52,37 +49,46 @@ void LEDManager::off() {
 }
 
 // -- Interaction --
-void LEDManager::onInteraction(const RGBColour &colour, const uint32_t interaction_duration) {
+void LEDManager::onInteraction(const RGBColour &colour, const uint32_t interaction_duration, const bool fade) {
+    m_interaction_colour = colour;
     m_interaction_duration = interaction_duration;
-    for(int i=0; i < m_strip.numPixels(); i++) {
-        m_strip.setPixelColor(i, m_strip.Color(colour.r, colour.g, colour.b));
-    }
-    m_strip.show();
+    m_interaction_fade = fade;
     m_interaction_timer = millis();
+
+    if (!m_interaction_fade) {
+       fillStrip(colour);
+    }
 }
 
 void LEDManager::updateInteraction() {
     if (m_interaction_timer == 0) return;
 
-    if (millis() - m_interaction_timer > m_interaction_duration) {
+    uint32_t elapsed = millis() - m_interaction_timer;
+
+    if (elapsed > m_interaction_duration) {
         m_interaction_timer = 0;
 
-        if (m_static_active) {
-            for(int i=0; i < m_strip.numPixels(); i++) {
-                m_strip.setPixelColor(i, m_strip.Color(m_static_colour.r, m_static_colour.g, m_static_colour.b));
-            }
-            m_strip.show();
-        }
-        else if (!m_rainbow_active && !m_pulse_active) {
-            off();
-        }
+        if (m_static_active) fillStrip(m_static_colour);
+        else if (!m_rainbow_active && !m_pulse_active) off();
+        return;
+    }
+
+    if (m_interaction_fade) {
+        const float half_duration = m_interaction_duration / 2.0f;
+        const float intensity = 1.0f - (fabs(static_cast<float>(elapsed) - half_duration) / half_duration);
+
+        const uint8_t r = static_cast<uint8_t>(m_interaction_colour.r * intensity);
+        const uint8_t g = static_cast<uint8_t>(m_interaction_colour.g * intensity);
+        const uint8_t b = static_cast<uint8_t>(m_interaction_colour.b * intensity);
+
+        fillStrip(RGBColour(r, g, b));
     }
 }
 
 
-
 // -- Rainbow --
 void LEDManager::setRainbow(const bool active) {
+    disableEffects();
     m_rainbow_active = active;
 }
 
@@ -127,6 +133,16 @@ void LEDManager::disableEffects() {
     m_rainbow_active = false;
     m_pulse_active = false;
     m_static_active = false;
+}
+
+
+void LEDManager::fillStrip(const RGBColour &colour) {
+    uint32_t raw = m_strip.Color(colour.r, colour.g, colour.b);
+    for(int i=0; i < m_strip.numPixels(); i++) {
+        m_strip.setPixelColor(i, m_strip.gamma32(raw));
+    }
+
+    m_strip.show();
 }
 
 

@@ -19,7 +19,7 @@ public:
     void initialise(uint16_t max_brightness = 127);
     void update();
 
-    void onInteraction(const RGBColour& colour, uint32_t interaction_duration = 1000);
+    void onInteraction(const RGBColour& colour, uint32_t interaction_duration = 1000, bool fade = false);
 
     // --- Lights ---
     void fill(const RGBColour& colour);
@@ -39,6 +39,8 @@ private:
 
     // -- Interaction --
     void updateInteraction();
+    bool m_interaction_fade = false;
+    RGBColour m_interaction_colour;
     uint32_t m_interaction_timer = 0;
     uint32_t m_interaction_duration = 0;
 
@@ -59,6 +61,7 @@ private:
 
     // Helpers
     void disableEffects();
+    void fillStrip(const RGBColour& colour);
 
 };
 

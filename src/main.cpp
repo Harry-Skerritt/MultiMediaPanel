@@ -132,7 +132,7 @@ void loop() {
         }
 
         if (rotary_encoder.isEncoderButtonClicked()) {
-            leds.onInteraction(RGBColour(255, 0, 212), 250);
+            leds.onInteraction(RGBColour(255, 0, 212), 1000, true);
         }
     }
 }
