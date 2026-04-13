@@ -1,12 +1,14 @@
 #include <Arduino.h>
 #include <Keypad.h>
 #include <BleKeyboard.h>
-
+#include <LittleFS.h>
+#include <FS.h>
 
 #include "LEDManager/LEDManager.h"
 #include "DisplayManager/DisplayManager.h"
 #include "EncoderManager/EncoderManager.h"
-#include "Pages/PageManager.h"
+#include "Pages/PageManager/PageManager.h"
+#include "SerialManager/SerialManager.h"
 #include "SettingsManager/SettingsManager.h"
 
 // --- PINS ---
@@ -29,6 +31,8 @@ BleKeyboard ble_keyboard("ESP32 MacroPad", "Handmade", 100);
 
 PageManager page_manager(leds, ble_keyboard, settings_manager);
 
+SerialManager serial_manager;
+
 
 
 // --- Matrix ---
@@ -50,6 +54,8 @@ bool rainbowActive = false;
 
 void setup() {
     Serial.begin(115200);
+    LittleFS.begin(true);
+
     while (!Serial) delay(10);
     delay(1000);
     Serial.println("--- Booting MacroPad ---");
@@ -79,6 +85,8 @@ void setup() {
 bool last_connection_state = true;
 
 void loop() {
+    serial_manager.update();
+
     const EncoderAction action = encoder.update();
     const bool connected = ble_keyboard.isConnected();
     const char key = keypad.getKey();

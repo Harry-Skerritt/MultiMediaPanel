@@ -26,11 +26,13 @@ private:
     char m_active_key = '\0';
     int m_volume_estimate = 50;
 
-    // Mapping labels to the 2x4 grid
     const char* m_labels[2][4] = {
         {"PLAY", "NEXT", "PREV", "STOP"},
         {"RAIN", "BRT+", "BRT-", "SLP!"}
     };
+
+    const int m_page_number = 1;
+    const char* m_page_title = "Media";
 };
 
 

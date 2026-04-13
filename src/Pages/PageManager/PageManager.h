@@ -6,11 +6,11 @@
 #define PAGEMANAGER_H
 #include "Adafruit_SSD1306.h"
 #include "BleKeyboard.h"
-#include "Base/Page.h"
+#include "../Base/Page.h"
 #include "EncoderManager/EncoderManager.h"
 #include "LEDManager/LEDManager.h"
-#include "MediaPage-Temp/MediaPage.h"
-#include "SettingsPage/SettingsPage.h"
+#include "../MediaPage-Temp/MediaPage.h"
+#include "../SettingsPage/SettingsPage.h"
 
 
 

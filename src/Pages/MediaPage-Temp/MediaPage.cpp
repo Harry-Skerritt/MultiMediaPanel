@@ -53,7 +53,8 @@ void MediaPage::draw(Adafruit_SSD1306 &display) {
 
     // --- Header ---
     display.setCursor(0, 3);
-    display.print("1 - MEDIA");
+    const StringSumHelper title_str = String(m_page_number) + " - " + m_page_title;
+    display.print(title_str);
 
     display.setCursor(85, 3);
     display.print("BT: OK");
