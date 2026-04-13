@@ -38,10 +38,15 @@ private:
     int m_sleep_minutes = 5;
     uint8_t m_contrast = 127;
 
+    // Reset
+    bool m_confirm_reset = false;
+    bool m_reset_choice = false; // False = No, True = Yes
+
+
     static constexpr int m_max_items = 7;
     const char* m_options[m_max_items] = {
         "Setup Pages", "LED Brightness", "LED State",
-        "OLED Contrast", "Sleep Timer", "BT Reset", "Back"
+        "OLED Contrast", "Sleep Timer", "Reset", "Back"
     };
 };
 

@@ -23,6 +23,25 @@ void SettingsPage::syncSettings(const DeviceSettings &settings) {
 PageID SettingsPage::handleInput(const EncoderAction action, char key) {
     if (action == EncoderAction::NONE) return PageID::SETTINGS;
 
+    if (m_confirm_reset) {
+        if (action == EncoderAction::CLOCKWISE || action == EncoderAction::COUNTER_CLOCKWISE) {
+            m_reset_choice = !m_reset_choice;
+        }
+
+        if (action == EncoderAction::SINGLE_CLICK) {
+            if (m_reset_choice) {
+                // Yes Reset
+                m_settings_manager.clearAll();
+                delay(500);
+                ESP.restart();
+            } else {
+                // No dont reset
+                m_confirm_reset = false;
+            }
+        }
+        return PageID::SETTINGS;
+    }
+
     if (action == EncoderAction::SINGLE_CLICK) {
         if (m_menu_index == m_max_items - 1) { // Back
             saveToFlash();
@@ -34,8 +53,8 @@ PageID SettingsPage::handleInput(const EncoderAction action, char key) {
         }
 
         if (m_menu_index == 5) { // Reset BT
-            // ble_keyboard.end();
-            m_settings_manager.clearAll();
+           m_confirm_reset = true;
+            m_reset_choice = false;
             return PageID::SETTINGS;
         }
 
@@ -144,6 +163,37 @@ void SettingsPage::draw(Adafruit_SSD1306 &display) {
             display.print(m_sleep_minutes);
             display.print("m");
         }
+    }
+
+
+    if (m_confirm_reset) {
+        // Draw Backdrop
+        display.fillRect(10, 15, 108, 35, SSD1306_BLACK);
+        display.drawRect(10, 15, 108, 35, SSD1306_WHITE);
+
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(20, 20);
+        display.print("ARE YOU SURE?");
+
+        // Draw No
+        if (!m_reset_choice) {
+            display.fillRect(20, 32, 35, 12, SSD1306_WHITE);
+            display.setTextColor(SSD1306_BLACK);
+        } else {
+            display.setTextColor(SSD1306_WHITE);
+        }
+        display.setCursor(30, 34);
+        display.print("NO");
+
+        // Draw Yes
+        if (m_reset_choice) {
+            display.fillRect(70, 32, 35, 12, SSD1306_WHITE);
+            display.setTextColor(SSD1306_BLACK);
+        } else {
+            display.setTextColor(SSD1306_WHITE);
+        }
+        display.setCursor(80, 34);
+        display.print("YES");
     }
 
     display.display();
