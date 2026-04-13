@@ -8,11 +8,13 @@
 #include "BleKeyboard.h"
 #include "../Base/Page.h"
 #include "EncoderManager/EncoderManager.h"
+#include "SettingsManager/SettingsManager.h"
 #include "LEDManager/LEDManager.h"
-#include "../MediaPage-Temp/MediaPage.h"
-#include "../SettingsPage/SettingsPage.h"
 
-
+// Forward Decs
+class MediaPage;
+class SettingsPage;
+class BankPage;
 
 class PageManager {
 public:
@@ -31,8 +33,9 @@ private:
     Page* m_current_page = nullptr;
     PageID m_current_page_id;
 
-    SettingsPage m_settings_page;
-    MediaPage m_media_page;
+    SettingsPage* m_settings_page;
+    MediaPage* m_media_page;
+    BankPage* m_bank_page;
 };
 
 

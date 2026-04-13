@@ -10,7 +10,11 @@
 #include "EncoderManager/EncoderManager.h"
 #include "LEDManager/Colours.h"
 
-enum class PageID { MEDIA, SETTINGS };
+enum class PageID {
+    MEDIA,
+    SETTINGS,
+    BANK_SELECT,
+};
 
 class Page {
 public:

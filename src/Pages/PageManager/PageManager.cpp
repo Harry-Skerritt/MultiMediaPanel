@@ -3,14 +3,22 @@
 //
 
 #include "PageManager.h"
+#include "../MediaPage-Temp/MediaPage.h"
+#include "../SettingsPage/SettingsPage.h"
+#include "../BankPage/BankPage.h"
 
 PageManager::PageManager(LEDManager& leds, BleKeyboard& keyboard, SettingsManager& settings_manager)
-    : m_leds(leds), m_current_page_id(), m_settings_page(leds, settings_manager), m_media_page(leds, keyboard) {
-    m_current_page = &m_media_page; // Todo: Change eventually
+    : m_leds(leds), m_current_page_id()
+{
+    m_media_page = new MediaPage(leds, keyboard);
+    m_settings_page = new SettingsPage(leds, settings_manager);
+    m_bank_page = new BankPage(settings_manager);
+
+    m_current_page = m_media_page; // Todo: Change eventually
 }
 
 void PageManager::initialise(const DeviceSettings &settings) {
-    m_settings_page.syncSettings(settings);
+    m_settings_page->syncSettings(settings);
 }
 
 
@@ -30,8 +38,9 @@ PageID PageManager::update(const EncoderAction action, const char key) {
 void PageManager::switchPage(const PageID new_page) {
     m_current_page_id = new_page;
     switch (new_page) {
-        case PageID::MEDIA:    m_current_page = &m_media_page; break;
-        case PageID::SETTINGS: m_current_page = &m_settings_page; break;
+        case PageID::MEDIA:         m_current_page = m_media_page; break;
+        case PageID::SETTINGS:      m_current_page = m_settings_page; break;
+        case PageID::BANK_SELECT:   m_current_page = m_bank_page; break;
     }
 
     m_leds.fill(m_current_page->getPageTheme());

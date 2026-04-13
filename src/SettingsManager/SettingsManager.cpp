@@ -15,6 +15,7 @@ void SettingsManager::save(const DeviceSettings &settings) {
     m_prefs.putBool("led_en", settings.leds_enabled);
     m_prefs.putUChar("scr_ct", settings.screen_contrast);
     m_prefs.putInt("slp_mn", settings.sleep_mins);
+    m_prefs.putInt("cur_bk", settings.current_bank);
 }
 
 DeviceSettings SettingsManager::load() {
@@ -24,12 +25,14 @@ DeviceSettings SettingsManager::load() {
     settings.leds_enabled = m_prefs.getBool("led_en", true);
     settings.screen_contrast = m_prefs.getUChar("scr_ct", 127);
     settings.sleep_mins = m_prefs.getInt("slp_mn", 5);
+    settings.current_bank = m_prefs.getInt("cur_bk", 0);
 
     Serial.println("SettingsManager::load()");
     Serial.println("led_brightness: " + String(settings.led_brightness));
     Serial.println("leds_enabled: " + String(settings.leds_enabled));
     Serial.println("screen_contrast: " + String(settings.screen_contrast));
     Serial.println("sleep_timer: " + String(settings.sleep_mins));
+    Serial.println("current_bank: " + String(settings.current_bank));
 
     return settings;
 }

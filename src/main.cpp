@@ -122,6 +122,13 @@ void loop() {
             }
             return;
         }
+        if (action == EncoderAction::DOUBLE_CLICK) {
+            if (page_manager.getCurrentPageID() != PageID::BANK_SELECT) {
+                page_manager.switchPage(PageID::BANK_SELECT);
+                leds.onInteraction(RGBColour(182, 66, 245), 600, true);
+            }
+            return;
+        }
 
         if (!connected && page_manager.getCurrentPageID() != PageID::SETTINGS) {
             display.update(connected, key, 0);

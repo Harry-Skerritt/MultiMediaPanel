@@ -5,6 +5,8 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
 #pragma once
+
+#include <Arduino.h>
 #include <Preferences.h>
 
 struct DeviceSettings {
@@ -12,6 +14,7 @@ struct DeviceSettings {
     bool leds_enabled;
     uint8_t screen_contrast;
     int sleep_mins;
+    int current_bank;
 };
 
 class SettingsManager {
